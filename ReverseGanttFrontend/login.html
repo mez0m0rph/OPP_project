@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ReverseGantt • Вход</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="auth-page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-title">ReverseGantt</div>
+      <div class="auth-sub">Вход</div>
+
+      <div id="toast" class="toast hidden"></div>
+
+      <label>Backend URL</label>
+      <div class="auth-row">
+        <input id="backendUrl" placeholder="http://localhost:5051"/>
+        <button class="btn btn-small" id="saveBackend" type="button">OK</button>
+      </div>
+
+      <form id="loginForm" class="auth-form">
+        <label>Email</label>
+        <input id="loginEmail" type="email" required placeholder="you@example.com"/>
+
+        <label>Пароль</label>
+        <input id="loginPassword" type="password" required placeholder="••••••••"/>
+
+        <button class="btn" type="submit">Войти</button>
+      </form>
+
+      <div class="auth-divider"></div>
+
+      <div class="auth-sub">Регистрация</div>
+
+      <form id="regForm" class="auth-form">
+        <label>Имя</label>
+        <input id="regName" required placeholder="Вася"/>
+
+        <label>Email</label>
+        <input id="regEmail" type="email" required placeholder="you@example.com"/>
+
+        <label>Пароль</label>
+        <input id="regPassword" type="password" required placeholder="••••••••"/>
+
+        <label>Роль</label>
+        <select id="regRole">
+          <option value="1" selected>Participant</option>
+          <option value="3">Captain</option>
+          <option value="2">Teacher</option>
+          <option value="0">Admin</option>
+        </select>
+
+        <label>Команда</label>
+        <select id="regTeamSelect"></select>
+
+        <div class="muted small" style="margin-top:8px">Если нет команды — введи название ниже</div>
+
+        <label>Создать команду</label>
+        <input id="regTeamName" placeholder="Team Alpha"/>
+
+        <button class="btn" type="submit">Зарегистрироваться</button>
+      </form>
+    </div>
+  </div>
+
+<script src="login.js"></script>
+</body>
+</html>

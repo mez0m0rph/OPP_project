@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ReverseGantt</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<header class="header">
+  <div class="container header-row">
+    <div class="brand">ReverseGantt</div>
+
+    <nav class="steps">
+      <button class="step" data-step="auth">0 Вход</button>
+      <button class="step" data-step="team">1 Команда</button>
+      <button class="step" data-step="project">2 Проект</button>
+      <button class="step" data-step="people">3 Участники</button>
+      <button class="step" data-step="tasks">4 Задачи</button>
+      <button class="step" data-step="timeline">5 Таймлайн</button>
+    </nav>
+
+    <div class="backend">
+      <span class="muted small">Backend</span>
+      <input id="backendUrl" class="backend-input" value="http://localhost:5051"/>
+      <button class="btn btn-small" id="saveBackend">OK</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div id="toast" class="toast hidden"></div>
+
+  <section class="panel" id="step-auth">
+    <div class="panel-head">
+      <h1>0) Авторизация</h1>
+      <p class="muted">Войди или зарегистрируйся. Роль влияет на доступный функционал.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Регистрация</h3>
+        <form id="registerForm">
+          <label>Имя</label>
+          <input id="regName" required placeholder="Напр. Алёна"/>
+
+          <label>Email (логин)</label>
+          <input id="regEmail" required placeholder="alena@example.com"/>
+
+          <label>Пароль</label>
+          <input id="regPassword" type="password" required placeholder="••••••••"/>
+
+          <label>Роль</label>
+          <select id="regRole">
+            <option value="0" selected>Участник</option>
+            <option value="1">Преподаватель</option>
+            <option value="2">Капитан</option>
+          </select>
+
+          <button class="btn" type="submit">Зарегистрироваться</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Вход</h3>
+        <form id="loginForm">
+          <label>Email</label>
+          <input id="loginEmail" required placeholder="alena@example.com"/>
+
+          <label>Пароль</label>
+          <input id="loginPassword" type="password" required placeholder="••••••••"/>
+
+          <button class="btn" type="submit">Войти</button>
+        </form>
+
+        <div class="auth-info">
+          <div class="muted small">Текущий пользователь:</div>
+          <div class="auth-pill" id="authState">—</div>
+          <button class="btn btn-ghost" id="logoutBtn" type="button">Выйти</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-foot">
+      <button class="btn" id="toTeamFromAuth">Дальше → Команда</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="step-team">
+    <div class="panel-head">
+      <h1>1) Команда</h1>
+      <p class="muted">Создай команду и выбери её как активную.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Создать команду</h3>
+        <form id="teamForm">
+          <label>Название</label>
+          <input id="teamName" required placeholder="Напр. Team Alpha"/>
+          <button class="btn" type="submit" id="teamCreateBtn">Создать</button>
+        </form>
+        <div class="muted small" id="teamCreateHint"></div>
+      </div>
+
+      <div class="card">
+        <h3>Команды</h3>
+        <div class="row">
+          <button class="btn" id="teamsReload" type="button">Обновить</button>
+          <span class="muted small">Активная: <b id="activeTeamLabel">—</b></span>
+        </div>
+        <div id="teamsList" class="list"></div>
+      </div>
+    </div>
+
+    <div class="panel-foot">
+      <button class="btn btn-ghost" id="backToAuth">← Назад</button>
+      <button class="btn" id="toProjectFromTeam">Дальше → Проект</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="step-project">
+    <div class="panel-head">
+      <h1>2) Проект</h1>
+      <p class="muted">Создай проект в активной команде.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Создать проект</h3>
+        <form id="projectForm">
+          <label>Название</label>
+          <input id="projectName" required placeholder="Итоговый продукт"/>
+
+          <label>Предмет</label>
+          <input id="projectSubject" required placeholder="ППО / БД / …"/>
+
+          <label>Дедлайн проекта</label>
+          <input id="projectDeadline" type="datetime-local"/>
+
+          <label>Команда</label>
+          <select id="projectTeamSelect"></select>
+
+          <button class="btn" type="submit" id="projectCreateBtn">Создать</button>
+        </form>
+        <div class="muted small" id="projectCreateHint"></div>
+      </div>
+
+      <div class="card">
+        <h3>Проекты активной команды</h3>
+        <div class="row">
+          <button class="btn" id="projectsReload" type="button">Обновить</button>
+          <span class="muted small">Активный: <b id="activeProjectLabel">—</b></span>
+        </div>
+        <div id="projectsList" class="list"></div>
+      </div>
+    </div>
+
+    <div class="panel-foot">
+      <button class="btn btn-ghost" id="backToTeam">← Назад</button>
+      <button class="btn" id="toPeopleFromProject">Дальше → Участники</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="step-people">
+    <div class="panel-head">
+      <h1>3) Участники</h1>
+      <p class="muted">Добавление участников доступно капитану.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Создать участника в активной команде</h3>
+        <form id="participantForm">
+          <label>Имя</label>
+          <input id="pName" required placeholder="Вася-Бэкендер"/>
+
+          <label>Email (необязательно)</label>
+          <input id="pEmail" placeholder="vasya@example.com"/>
+
+          <label>Роль</label>
+          <select id="pRole">
+            <option value="0" selected>Участник</option>
+            <option value="1">Преподаватель</option>
+            <option value="2">Капитан</option>
+          </select>
+
+          <label>Команда</label>
+          <select id="pTeamSelect"></select>
+
+          <button class="btn" type="submit" id="participantCreateBtn">Создать</button>
+        </form>
+        <div class="muted small" id="participantCreateHint"></div>
+      </div>
+
+      <div class="card">
+        <h3>Участники активной команды</h3>
+        <div class="row">
+          <button class="btn" id="participantsReload" type="button">Обновить</button>
+        </div>
+        <div id="participantsList" class="list"></div>
+      </div>
+    </div>
+
+    <div class="panel-foot">
+      <button class="btn btn-ghost" id="backToProject">← Назад</button>
+      <button class="btn" id="toTasksFromPeople">Дальше → Задачи</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="step-tasks">
+    <div class="panel-head">
+      <h1>4) Задачи</h1>
+      <p class="muted">Капитан создаёт задачи и зависимости. Участник сдаёт результат. Преподаватель оценивает и комментирует.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Создать задачу</h3>
+        <form id="taskForm">
+          <label>Проект</label>
+          <select id="tProjectSelect"></select>
+
+          <label>Название</label>
+          <input id="tTitle" required placeholder="Интеграция Web-Backend"/>
+
+          <label>Описание</label>
+          <textarea id="tDesc" placeholder="Коротко что делать"></textarea>
+
+          <div class="grid3">
+            <div>
+              <label>Start (можно пусто)</label>
+              <input id="tStart" type="datetime-local"/>
+            </div>
+            <div>
+              <label>End (можно пусто)</label>
+              <input id="tEnd" type="datetime-local"/>
+            </div>
+            <div>
+              <label>Deadline</label>
+              <input id="tDeadline" type="datetime-local" required/>
+            </div>
+          </div>
+
+          <div class="grid3">
+            <div>
+              <label>Длительность (дни, если нет дат)</label>
+              <input id="tDurationDays" type="number" min="1" placeholder="Напр. 3"/>
+            </div>
+            <div>
+              <label>Исполнители</label>
+              <div id="executorsBox" class="checklist"></div>
+            </div>
+            <div>
+              <label>Действия</label>
+              <button class="btn" type="submit" id="taskCreateBtn">Создать</button>
+              <div class="muted small" id="taskCreateHint"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Задачи активного проекта</h3>
+        <div class="row">
+          <button class="btn" id="tasksReload" type="button">Обновить</button>
+        </div>
+        <div id="tasksList" class="list"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Зависимости (Drag & Drop)</h3>
+      <div class="muted small">Перетащи задачу “предшественник” на задачу “последователь”, выбери тип связи и offset.</div>
+
+      <div class="dep-grid">
+        <div>
+          <div class="dep-title">Перетащи отсюда</div>
+          <div id="depDragList" class="dep-list"></div>
+        </div>
+
+        <div>
+          <div class="dep-title">Брось сюда</div>
+          <div id="depDropList" class="dep-list"></div>
+        </div>
+
+        <div class="dep-form">
+          <div class="dep-title">Пара</div>
+          <div class="dep-pair" id="depPair">—</div>
+
+          <label>Тип</label>
+          <select id="depType">
+            <option value="2" selected>FS</option>
+            <option value="0">SS</option>
+            <option value="1">SF</option>
+            <option value="3">FF</option>
+          </select>
+
+          <label>Offset (минуты)</label>
+          <input id="depOffset" type="number" value="0"/>
+
+          <button class="btn" id="depCreateBtn" type="button">Создать зависимость</button>
+          <button class="btn btn-ghost" id="depResetBtn" type="button">Сбросить</button>
+
+          <div class="muted small" id="depHint"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="row">
+          <div><b>Текущие зависимости</b></div>
+          <button class="btn btn-small" id="depsReload" type="button">Обновить</button>
+        </div>
+        <div id="depsList" class="list"></div>
+      </div>
+    </div>
+
+    <div class="panel-foot">
+      <button class="btn btn-ghost" id="backToPeople">← Назад</button>
+      <button class="btn" id="toTimelineFromTasks">Дальше → Таймлайн</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="step-timeline">
+    <div class="panel-head">
+      <h1 id="ganttTitle">План проекта</h1>
+      <p class="muted" id="ganttSubtitle">—</p>
+    </div>
+
+    <div class="card">
+      <div class="row wrap gantt-toolbar">
+        <div style="min-width:260px">
+          <span class="muted small">Проект</span><br/>
+          <select id="timelineProjectSelect"></select>
+        </div>
+
+        <div style="min-width:220px">
+          <span class="muted small">Режим</span><br/>
+          <select id="timelineMode">
+            <option value="actual" selected>Факт</option>
+            <option value="reverse">Reverse</option>
+          </select>
+        </div>
+
+        <button class="btn" id="timelineReload" type="button">Построить</button>
+      </div>
+
+      <div class="gantt">
+        <div class="gantt-left">
+          <div class="gantt-left-head">
+            <div class="gantt-col taskcol">Задачи</div>
+            <div class="gantt-col ownercol">Ответственные</div>
+          </div>
+          <div id="ganttLeftBody" class="gantt-left-body"></div>
+        </div>
+
+        <div class="gantt-right">
+          <div id="ganttRightHead" class="gantt-right-head"></div>
+          <div id="ganttRightBody" class="gantt-right-body"></div>
+        </div>
+      </div>
+
+      <div class="muted small" id="timelineMeta" style="margin-top:10px"></div>
+    </div>
+
+    <div class="panel-foot">
+      <button class="btn btn-ghost" id="backToTasks">← Назад</button>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
